@@ -11,6 +11,8 @@
     "electron": "^8.2.3"
   },
   "dependencies": {
-    "@abandonware/noble": "^1.9.2-8"
+    "@abandonware/noble": "^1.9.2-8",
+    "jimp": "^0.10.3",
+    "opencv4nodejs": "^5.5.0"
   }
 }
