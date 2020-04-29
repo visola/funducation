@@ -1,7 +1,8 @@
-var fs = require('fs');
 var spawn = require('child_process').spawn;
 var http = require('http');
 const Jimp = require('jimp');
+
+var http = require("http");
 
 var server = http.createServer(function(request, response) {
   if (request.path == '/') {
@@ -43,11 +44,8 @@ var server = http.createServer(function(request, response) {
         response.end();
         console.log(`End: ${Date.now() - start}ms, ${Date.now() - local}ms`);
       });
-
-//    response.writeHead(200, { 'Content-type': 'image/jpeg' });
-//    response.write(Buffer.from(data));
-//    response.end();
   });
+
 });
 
 server.listen(8080);
