@@ -1,0 +1,9 @@
+#video {
+  right: 10px;
+  position: absolute;
+  top: 10px;
+}
+
+#video img {
+  width: 200px;
+}
