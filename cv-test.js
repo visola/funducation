@@ -58,7 +58,6 @@ var server = http.createServer(function(request, response) {
     if (bestMatch) {
       matchedIndexes.add(index);
       const { match, template } = bestMatch;
-      console.log(template.value, template.contour.arcLength(), contour.arcLength(), Math.abs(template.contour.arcLength() - contour.arcLength()));
       frame.drawRectangle(contour.boundingRect(), new cv.Vec(0, 255, 255));
       const {x, y} = contour.boundingRect();
       frame.putText(
