@@ -3,22 +3,16 @@ const fs = require('fs');
 const http = require('http');
 const objects = require('./model/objects');
 
-const detector = new cv.ORBDetector();
+const templates = objects.loadObjects('letter').map((object) => {
+  object.image = cv.imdecode(Buffer.from(object.image, 'base64'));
 
-const baseKeyPoints = objects.loadObjects('letter').map((object) => {
-  const image = cv.imdecode(Buffer.from(object.image, 'base64'));
-  console.log(`Image loaded: ${image.cols}X${image.rows}`);
-  const keyPoints = detector.detect(image);
-  console.log(`  Keypoints: ${keyPoints}`);
-  const description = detector.compute(image, keyPoints);
-  console.log(`  Description: ${description.cols}X${description.rows}`);
-  return {
-    description,
-    image,
-    keyPoints,
-    type: object.type,
-    value: object.value,
-  };
+  let filtered = object.image.cvtColor(cv.COLOR_BGR2GRAY);
+  filtered = filtered.inRange(new cv.Vec(50, 50, 50).norm(), new cv.Vec(100, 100, 100).norm());
+  const contours = filtered.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    .filter((c) => c.hierarchy.z >= 0);
+  object.contour = contours[0];
+
+  return object;
 });
 
 var server = http.createServer(function(request, response) {
@@ -36,41 +30,54 @@ var server = http.createServer(function(request, response) {
 
   let filtered = frame.cvtColor(cv.COLOR_BGR2GRAY);
   filtered = filtered.inRange(new cv.Vec(50, 50, 50).norm(), new cv.Vec(100, 100, 100).norm());
-  const contours = filtered.findContours(cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+  const contours = filtered.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
   console.log(`Contours: ${Date.now() - start}ms, ${Date.now() - local}ms`);
   local = Date.now();
 
-  baseKeyPoints.forEach((kp) => {
-    console.log(`Compare ${kp.value}: ${Date.now() - start}ms, ${Date.now() - local}ms`);
+  const matchedIndexes = new Set();
+  contours.forEach((contour, index) => {
+    if (matchedIndexes.has(contour.hierarchy.z)) {
+      return;
+    }
+
+    const rect = contour.boundingRect();
+    if (rect.height < 30 || rect.width < 30 || rect.height > 150 || rect.width > 150) {
+      return;
+    }
+
+    const bestMatch = templates.map((template) => {
+      return {
+        match: contour.matchShapes(template.contour, 1),
+        template: template,
+      };
+    }).filter((r) => r.match < 0.4)
+    .sort((r1, r2) => {
+      return r1.match - r2.match;
+    })[0];
+
+    if (bestMatch) {
+      matchedIndexes.add(index);
+      const { match, template } = bestMatch;
+      console.log(template.value, template.contour.arcLength(), contour.arcLength(), Math.abs(template.contour.arcLength() - contour.arcLength()));
+      frame.drawRectangle(contour.boundingRect(), new cv.Vec(0, 255, 255));
+      const {x, y} = contour.boundingRect();
+      frame.putText(
+        `${template.value}:${Math.round(10000*match)/10000} `,
+        new cv.Point(x - 2, y),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        new cv.Vec(255, 255, 0),
+        2,
+      );
+    }
+
+    console.log(`Matching shapes: ${Date.now() - start}ms, ${Date.now() - local}ms`);
     local = Date.now();
-
-    contours.forEach((c) => {
-      try {
-        const rect = c.boundingRect();
-        rect.x -= 10;
-        rect.y -= 10;
-        rect.width= 10;
-        rect.height= 10;
-
-        if (rect.height == 1 || rect.width == 1) {
-          return;
-        }
-
-        frame.drawRectangle(c.boundingRect(), new cv.Vec(255, 255, 255));
-        const area = frame.getRegion(rect);
-        const keyPoints = detector.detect(area);
-        const description = detector.compute(area, keyPoints);
-        console.log('-----');
-        console.log(description.cols, kp.description.cols);
-        console.log(cv.matchBruteForceHammingLut(description, kp.description).length);
-        console.log('-----');
-      } catch(e) {console.log(e);}
-    });
   });
 
   contours.forEach((c) => {
     frame.drawContours([c.getPoints()], 0, new cv.Vec(0, 255, 0));
-    frame.drawRectangle(c.boundingRect(), new cv.Vec(0, 255, 255));
+    // frame.drawRectangle(c.boundingRect(), new cv.Vec(0, 255, 255));
   });
   console.log(`Drawing: ${Date.now() - start}ms, ${Date.now() - local}ms`);
   local = Date.now();

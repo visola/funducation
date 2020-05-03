@@ -89,7 +89,7 @@ saveObjectButtonEl.addEventListener('click', () => {
 });
 
 svgEl.addEventListener('click', (e) => {
-  const border = 200;
+  const border = 15;
   const elements = document.elementsFromPoint(e.clientX, e.clientY);
   const indexOfSvg = elements.indexOf(svgEl);
   const rect = elements[indexOfSvg - 2];
