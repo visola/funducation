@@ -1,4 +1,4 @@
-const { dataDir } = require('./dataDirectory');
+const { dataDir } = require('../../common/dataDirectory');
 const fs = require('fs');
 const path = require('path');
 const join = path.join;
