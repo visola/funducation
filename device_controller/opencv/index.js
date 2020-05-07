@@ -1,9 +1,20 @@
 const cv = require('opencv4nodejs');
+const Gpio = require('onoff').Gpio;
 
 const videoCapture = new cv.VideoCapture(0);
 
-let lastFrame = null;
+let buttonPressedAt = null;
+let lastButtonFrame = null;
 let lastCapturedFrame = null;
+let lastFrame = null;
+
+const button = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
+process.on('SIGINT', _ => {try {button.unexport()} catch(e){}});
+
+button.watch((err, value) => {
+  buttonPressedAt = Date.now();
+  lastButtonFrame = lastFrame;
+});
 
 function capture() {
   lastCapturedFrame = lastFrame;
@@ -54,11 +65,17 @@ lastFrame = lastCapturedFrame = videoCapture.read();
 readNextFrame();
 
 module.exports = {
+  get buttonPressedAt() {
+    return buttonPressedAt;
+  },
   capture,
   get contours() {
     return contours();
   },
   crop,
+  get lastButtonFrame() {
+    return lastButtonFrame;
+  },
   get lastCapturedFrame() {
     return ensureFrame();
   },

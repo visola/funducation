@@ -4,6 +4,7 @@
   "main": "main.js",
   "dependencies": {
     "express": "^4.17.1",
+    "onoff": "^6.0.0",
     "opencv4nodejs": "^5.5.0"
   },
   "scripts": {
