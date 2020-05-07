@@ -1,5 +1,5 @@
 const {ipcRenderer} = require('electron');
-	
+
 const apiKey = ipcRenderer.sendSync('synchronous-message', 'GOOGLE_API_KEY');
 
 const buttonEl = document.querySelector('#speak');
