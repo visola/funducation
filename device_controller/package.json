@@ -1,0 +1,12 @@
+{
+  "name": "device_controller",
+  "version": "1.0.0",
+  "main": "main.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "opencv4nodejs": "^5.5.0"
+  },
+  "scripts": {
+    "start": "node ."
+  }
+}

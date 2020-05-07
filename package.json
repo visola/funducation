@@ -1,8 +1,0 @@
-{
-  "name": "funducation",
-  "version": "1.0.0",
-  "dependencies": {
-    "express": "^4.17.1",
-    "opencv4nodejs": "^5.5.0"
-  }
-}
