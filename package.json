@@ -8,7 +8,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^9.4.0"
+    "electron": "^11.5.0"
   },
   "dependencies": {
     "@abandonware/noble": "^1.9.2-8",
